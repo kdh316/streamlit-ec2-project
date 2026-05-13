@@ -4,8 +4,10 @@ st.title("10년 전 가격 맞추기 퀴즈")
 st.write("학번: 2022204015")
 st.write("이름: 김도형")
 
+
 @st.cache_data
 def load_quiz():
+    print("퀴즈 데이터를 불러왔습니다.")
     return [
         {"name": "과자 짱구", "old_price": 1000, "new_price": 1700, "image": "짱구.jpg"},
         {"name": "삼각김밥", "old_price": 900, "new_price": 1200, "image": "삼각김밥.jpg"},
@@ -14,6 +16,7 @@ def load_quiz():
         {"name": "영화티켓(주말)", "old_price": 9000, "new_price": 15000, "image": "영화티켓.jpg"},
         {"name": "대중교통", "old_price": 1200, "new_price": 1500, "image": "대중교통.jpg"}
     ]
+
 
 quiz_data = load_quiz()
 
@@ -31,6 +34,8 @@ if "user_answer" not in st.session_state:
     st.session_state.user_answer = 0
 if "result_message" not in st.session_state:
     st.session_state.result_message = ""
+if "error_percent" not in st.session_state:
+    st.session_state.error_percent = 0
 
 if st.session_state.login == False:
     st.subheader("로그인")
@@ -39,10 +44,14 @@ if st.session_state.login == False:
     password = st.text_input("비밀번호", type="password")
 
     if st.button("로그인"):
+        print("로그인 버튼 클릭")
+
         if user_id == "2022204015" and password == "1234":
+            print("로그인 성공")
             st.session_state.login = True
             st.rerun()
         else:
+            print("로그인 실패")
             st.error("로그인 실패")
 
 else:
@@ -71,9 +80,16 @@ else:
                 )
 
                 if st.button("정답 확인"):
+                    print(f"문제 제출: {quiz['name']}")
+                    print(f"현재 문제 번호: {current + 1}")
+                    print(f"사용자 입력값: {user_answer}")
+
                     answer = quiz["old_price"]
                     error = abs(user_answer - answer)
                     error_percent = error / answer * 100
+
+                    print(f"정답: {answer}")
+                    print(f"오차율: {error_percent:.1f}%")
 
                     st.session_state.user_answer = user_answer
                     st.session_state.error_percent = error_percent
@@ -90,6 +106,8 @@ else:
                         st.session_state.result_message = "조금 차이가 있지만 방향은 괜찮습니다."
                     else:
                         st.session_state.result_message = "오차가 큽니다. 과거 가격이 생각보다 달랐습니다."
+
+                    print(f"결과 메시지: {st.session_state.result_message}")
 
                     st.session_state.show_result = True
                     st.rerun()
@@ -117,6 +135,7 @@ else:
                 st.error(st.session_state.result_message)
 
             if st.button("다음 문제"):
+                print(f"다음 문제로 이동: {current + 1}번 문제 종료")
                 st.session_state.current += 1
                 st.session_state.show_result = False
                 st.rerun()
@@ -126,6 +145,10 @@ else:
 
         average_error = st.session_state.total_error_percent / len(quiz_data)
         final_score = max(0, 100 - average_error)
+
+        print("퀴즈 완료")
+        print(f"최종 점수: {final_score:.1f}점")
+        print(f"평균 오차율: {average_error:.1f}%")
 
         st.write(f"최종 점수: **{final_score:.1f}점 / 100점**")
         st.write(f"평균 오차율: **{average_error:.1f}%**")
@@ -142,10 +165,12 @@ else:
             st.error("현재 물가에 익숙해져 과거 가격 기억이 흐려졌습니다.")
 
         if st.button("다시 시작"):
+            print("퀴즈 다시 시작")
             st.session_state.current = 0
             st.session_state.score = 0
             st.session_state.total_error_percent = 0
             st.session_state.show_result = False
             st.session_state.user_answer = 0
             st.session_state.result_message = ""
+            st.session_state.error_percent = 0
             st.rerun()
